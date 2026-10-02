@@ -14,6 +14,16 @@ st.title("🏰 Control de Reservas y Pagos")
 # Tarifas Fijas Configurables
 PRECIO_MESA_SILLAS = 120.0  # 1 mesa y 10 sillas para ambos locales
 
+# Selección Horizontal del Local (remplaza las pestañas para evitar el bug de renderizado)
+local_seleccionado = st.radio(
+    "Selecciona el local:",
+    ["🌳 Quinta La Luz", "🏛️ Salón Gema"],
+    horizontal=True,
+    label_visibility="collapsed"
+)
+
+st.markdown("---")
+
 def render_salon_view(salon_nombre, cal_key, renta_defecto, hora_extra_precio):
     st.subheader(f"Calendario y Reservas - {salon_nombre}")
     
@@ -39,12 +49,12 @@ def render_salon_view(salon_nombre, cal_key, renta_defecto, hora_extra_precio):
             "borderColor": color
         })
         
-    # Opciones de FullCalendar (Sin botones de cambio de vista mes/semana/día)
+    # Opciones de FullCalendar (Sin botones de vista semanal/diaria)
     calendar_options = {
         "headerToolbar": {
             "left": "prev,next today",
             "center": "title",
-            "right": ""  # Se removieron los botones month/week/day
+            "right": ""
         },
         "initialView": "dayGridMonth",
         "selectable": True,
@@ -194,18 +204,15 @@ def render_salon_view(salon_nombre, cal_key, renta_defecto, hora_extra_precio):
         else:
             st.write("No hay eventos registrados en este local aún.")
 
-# Navegación por pestañas superiores principales
-tab_quinta, tab_gema = st.tabs(["🌳 Quinta La Luz", "🏛️ Salón Gema"])
-
-with tab_quinta:
+# Renderizar el calendario de acuerdo al botón seleccionado
+if local_seleccionado == "🌳 Quinta La Luz":
     render_salon_view(
         salon_nombre="Quinta La Luz", 
         cal_key="cal_quinta_la_luz", 
         renta_defecto=7500.0, 
         hora_extra_precio=1000.0
     )
-
-with tab_gema:
+else:
     render_salon_view(
         salon_nombre="Salón Gema", 
         cal_key="cal_salon_gema", 
