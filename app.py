@@ -194,16 +194,36 @@ def render_salon_view(salon_nombre, cal_key, renta_defecto, hora_extra_precio):
                     st.rerun()
 
             st.markdown("---")
-            # Opción de Eliminación con confirmación
+            # Opción de Eliminación con confirmación de doble paso
             with st.expander("⚠️ Zona de Peligro (Eliminar Evento)"):
                 st.warning("Esta acción eliminará la reserva, sus extras y su historial de pagos permanentemente.")
-                if st.button("🗑️ Confirmar y Eliminar Reserva", key=f"btn_del_{cal_key}_{ev_id}", type="primary"):
-                    db.eliminar_evento(ev_id)
-                    st.success("Reserva eliminada con éxito.")
-                    st.rerun()
-        else:
-            st.write("No hay eventos registrados en este local aún.")
+                
+                # Clave única en session_state para controlar el estado de confirmación de este evento
+                confirm_key = f"confirm_del_{cal_key}_{ev_id}"
+                
+                if confirm_key not in st.session_state:
+                    st.session_state[confirm_key] = False
 
+                if not st.session_state[confirm_key]:
+                    # Paso 1: Primer botón para solicitar eliminación
+                    if st.button("🗑️ Eliminar Reserva", key=f"btn_init_del_{cal_key}_{ev_id}"):
+                        st.session_state[confirm_key] = True
+                        st.rerun()
+                else:
+                    # Paso 2: Mensaje de alerta y botones de confirmación definitiva
+                    st.error("🚨 **¿Estás completamente seguro? Esto no se puede deshacer.**")
+                    
+                    col_si, col_no = st.columns(2)
+                    with col_si:
+                        if st.button("⚠️ SÍ, BORRAR DEFINITIVAMENTE", key=f"btn_yes_{cal_key}_{ev_id}", type="primary"):
+                            db.eliminar_evento(ev_id)
+                            st.session_state[confirm_key] = False
+                            st.success("Reserva eliminada con éxito.")
+                            st.rerun()
+                    with col_no:
+                        if st.button("❌ Cancelar", key=f"btn_no_{cal_key}_{ev_id}"):
+                            st.session_state[confirm_key] = False
+                            st.rerun()
 # Renderizar el calendario de acuerdo al botón seleccionado
 if local_seleccionado == "🌳 Quinta La Luz":
     render_salon_view(
