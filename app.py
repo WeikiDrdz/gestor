@@ -91,8 +91,15 @@ def render_salon_view(salon_nombre, cal_key, renta_defecto, hora_extra_precio):
             submit = st.form_submit_button("💾 Guardar Reserva")
             
             if submit:
+                fecha_str = fecha_evento.strftime("%Y-%m-%d")
+                
+                # VALIDACIÓN: Comprobar si ya existe un evento agendado para esa fecha en el salón seleccionado
+                fechas_ocupadas = [ev["fecha"] for ev in lista_eventos]
+                
                 if not cliente_nombre or costo_base <= 0:
                     st.error("Por favor completa el nombre del cliente y el costo base.")
+                elif fecha_str in fechas_ocupadas:
+                    st.error(f"⛔ **¡Fecha no disponible!** Ya existe un evento agendado para **{salon_nombre}** el **{fecha_evento.strftime('%d/%m/%Y')}**.")
                 else:
                     extras = []
                     if cant_horas > 0:
@@ -106,7 +113,7 @@ def render_salon_view(salon_nombre, cal_key, renta_defecto, hora_extra_precio):
                         salon=salon_nombre,
                         cliente_nombre=cliente_nombre,
                         cliente_telefono=cliente_telefono,
-                        fecha_evento=fecha_evento.strftime("%Y-%m-%d"),
+                        fecha_evento=fecha_str,
                         costo_base=costo_base,
                         extras_lista=extras,
                         anticipo=anticipo
